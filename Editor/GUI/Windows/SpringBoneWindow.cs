@@ -43,12 +43,27 @@ namespace Unity.Animations.SpringBones
 
         private static string FindIconAssetDirectory()
         {
+#if ORIGINAL
             // Try to find the icons in a way such that the user can put the Dynamics folder anywhere
             return DirectoryUtil.GetFilesRecursively(Application.dataPath, "SpringCapsuleIcon.tga")
                 .Select(path => PathUtil.NormalizePath(path))
                 .Where(path => path.ToLowerInvariant().Contains("editor/springbone/gui/icons/"))
                 .Select(path => PathUtil.SystemPathToAssetPath(System.IO.Path.GetDirectoryName(path)))
                 .FirstOrDefault();
+#else
+            // UPMパッケージに対応
+            var iconGuids = AssetDatabase.FindAssets("t:texture SpringCapsuleIcon");
+            foreach (var iconGuid in iconGuids)
+            {
+                var iconPath = AssetDatabase.GUIDToAssetPath(iconGuid);
+                if (iconPath.Contains("Editor/GUI/Icons/", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return System.IO.Path.GetDirectoryName(iconPath);
+                }
+            }
+
+            return null;
+#endif
         }
 
         private void InitializeIcons()
